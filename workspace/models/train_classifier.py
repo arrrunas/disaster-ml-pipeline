@@ -20,8 +20,6 @@ from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer, T
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import classification_report
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.svm import LinearSVC
-from sklearn.naive_bayes import GaussianNB
 
 def load_data(database_filepath):
     engine = create_engine('sqlite:///' + database_filepath)
@@ -35,7 +33,8 @@ def load_data(database_filepath):
         'tools', 'hospitals', 'shops', 'aid_centers', 'other_infrastructure',
         'weather_related', 'floods', 'storm', 'fire', 'earthquake', 'cold',
         'other_weather', 'direct_report']]
-    return X, y
+    category_names = y.columns.tolist()
+    return X, y, category_names
 
 
 def tokenize(text):
@@ -52,21 +51,27 @@ def tokenize(text):
 
 def build_model():
     pipeline = Pipeline([
-        ('vect', TfidfVectorizer(stop_words='english')),
+        ('features', FeatureUnion([
+
+            ('text_pipeline', Pipeline([
+                ('vect', CountVectorizer(tokenizer=tokenize)),
+                ('tfidf', TfidfTransformer())
+            ]))
+        ])),
+
         ('clf', MultiOutputClassifier(KNeighborsClassifier()))
     ])
 
     parameters = [
         {"clf": [MultiOutputClassifier(RandomForestClassifier())],
-        "clf__estimator__n_estimators": [10, 100, 250],
-        "clf__estimator__max_depth":[8],
-        "clf__estimator__random_state":[42]},
+        "clf__estimator__n_estimators": [10, 100],
+        "clf__estimator__max_depth":[8]},
         {"clf": [MultiOutputClassifier(KNeighborsClassifier())],
-        "clf__estimator__leaf_size": [5, 10, 30],
-        "clf__estimator__n_neighbors": [3, 5, 7]}
+        "clf__estimator__leaf_size": [5, 10],
+        "clf__estimator__n_neighbors": [3, 5]}
     ]
 
-    cv = GridSearchCV(pipeline, param_grid=parameters)
+    cv = GridSearchCV(pipeline, param_grid=parameters, cv=3, n_jobs=-1)
     return cv
 
 def evaluate_model(model, X_test, Y_test, category_names):
@@ -81,7 +86,7 @@ def evaluate_model(model, X_test, Y_test, category_names):
 
 
 def save_model(model, model_filepath):
-    filename = 'disaster_model.sav'
+    filename = model_filepath
     pickle.dump(model, open(filename, 'wb'))
 
 
