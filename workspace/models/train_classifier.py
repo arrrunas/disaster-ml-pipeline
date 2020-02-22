@@ -71,7 +71,13 @@ def build_model():
 
 def evaluate_model(model, X_test, Y_test, category_names):
     acc = model.score(X_test, Y_test)
-    print("Accuracy score:", acc)
+    print("Classifier accuracy score:", acc)
+
+    y_pred = model.predict(X_test)
+
+    for i in range(len(category_names)):
+        acc_category = classification_report(y_pred[:,i], Y_test.iloc[:,i])
+        print("Accuracy for {} : {}".format(category_names[i], acc))
 
 
 def save_model(model, model_filepath):
