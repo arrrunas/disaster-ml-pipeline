@@ -1,5 +1,28 @@
 # Disaster Response Pipeline Project
 
+### Intro:
+This app takes Tweets data, processes it, and classifies messages according to 32 disaster response categories using a multi output K-Neighbors classifier. Using flask, the data is visualised and new messages can be entered to be classified with the pre-trained model.
+
+Note: model pickle file not included due to filesize constraints.
+
+### Contents:
+    - app
+    | - template
+    | |- master.html  # main page of web app
+    | |- go.html  # classification result page of web app
+    |- run.py  # Flask file that runs app
+
+    - data
+    |- disaster_categories.csv  # data to process 
+    |- disaster_messages.csv  # data to process
+    |- process_data.py # data processing script
+    |- DisasterResponse.db   # database containing processed data
+
+    - models
+    |- train_classifier.py # ML script 
+
+    - README.md
+
 ### Instructions:
 1. Run the following commands in the project's root directory to set up your database and model.
 
